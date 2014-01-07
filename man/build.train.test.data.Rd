@@ -1,0 +1,42 @@
+\name{build.train.test.data}
+\alias{build.train.test.data}
+\title{Function to extract sequences and build feature matrices}
+\usage{
+  build.train.test.data(pos.regions, neg.regions,
+    dictionary.file, org = "hg19",
+    select.top.features = TRUE, ...)
+}
+\arguments{
+  \item{pos.regions}{Genomic Ranges object representing
+  positive class regions}
+
+  \item{neg.regions}{Genomic Ranges object representing
+  negative class regions}
+
+  \item{dictionary.file}{Dictionary file for the kernel
+  build using \code{ChIPKernels}}
+
+  \item{org}{Name of the organism. Default is hg19. This
+  assumes that the corresponding BSGenome library is
+  installed}
+
+  \item{select.top.features}{Logical indicating whether
+  feature selection should be performed}
+
+  \item{...}{Additional arugments to
+  \code{select.top.features}}
+}
+\value{
+  List containging feature matrix, labels and indexes for
+  both train and test.
+
+  Matrix of positions indicating the position in the
+  sequence with maximum kmer score.
+}
+\description{
+  Function to extract sequences and build feature matrices
+}
+\seealso{
+  \link{\code{select.top.features}}
+}
+

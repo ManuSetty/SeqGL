@@ -1,0 +1,229 @@
+\documentclass[10pt,oneside]{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\usepackage{breakurl}
+\renewcommand{\familydefault}{\sfdefault} 
+%\usepackage{biolinum}
+\begin{document}
+
+
+
+% <<setup, include=FALSE, cache=FALSE>>=
+% library(knitr)
+% # set global chunk options
+% opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
+% options(replace.assign=TRUE,width=90)
+% @
+
+
+\title{\bf{Identification of TF binding profiles from ChIP-seq and Dnase-seq using SeqGL}}
+\author{Manu Setty$^1$, Christina Leslie\\[1em]Computational Biology Program, MSKCC,\\ New York\\
+\texttt{$^1$manu@cbio.mskcc.org}}
+
+
+
+\maketitle
+
+\begin{abstract}
+SeqGL is a new group lasso-based algorithm to extract multiple transcription factor (TF) binding signals from ChIP- and DNase-seq profiles. Benchmarked on over 100 ChIP-seq experiments, SeqGL outperformed traditional motif discovery tools in discriminative accuracy and cofactor detection. SeqGL successfully scales to DNase-seq data, identifying a large multiplicity of TF signals confirmed by ChIP, and can be used with multitask training to learn genomic-context and cell-type specific TF signals.
+\end{abstract}
+
+
+\tableofcontents
+
+\section{Installation}
+The R package can be downloaded from \url{https://bitbucket.org/leslielab/seqgl}. 
+\subsection {Dependencies}
+
+\begin{itemize}
+\item The following bioconductor packages: Biostrings, GenomicRanges, BSgenome, WGCNA, fastcluster, gtools, sfsmisc, kernlab. 
+These packages can be installed using the command 
+<<bio-install, eval=FALSE>>=
+source("http://bioconductor.org/biocLite.R")
+biocLite(c("Biostrings", "GenomicRanges", "BSgenome", "WGCNA", "fastcluster", "gtools", "sfsmisc", "kernlab"))
+@
+
+\item ChIPKernels package for wildcard kernel. This package can be downloaded from \url{https://bitbucket.org/leslielab/chipkernels}.
+
+\item spams toolbox for running group lasso. Download and install the R package from \url{http://spams-devel.gforge.inria.fr/downloads.html}.
+
+\item HOMER motif finding tool for associating groups with motifs. \url{http://biowhat.ucsd.edu/homer/ngs/index.html}.
+
+\item BSgenome package for the organisms of your choice from Bioconductor. Example if the peaks are from hg19, install BSgenome.Hsapiens.UCSC.hg19 from \url{http://bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg19.html}. The example detailed in this vignette assumes this package has been installed.
+
+\end{itemize}
+
+After all the dependencies are installed, SeqGL can be installed from source using \texttt{R CMD INSTALL <path to package>}.
+
+\section{Inputs}
+Chip-seq or DNase-seq peaks are the inputs to SeqGL. The peaks should be provided in bed format and should contain the following columns.
+\begin{itemize}
+\item chrom: Chromosome 
+\item start: Genomic start
+\item end: Genomic end
+\item strand: Strand
+\item score: Score to rank the peaks. Can be ${-log (p-value)}$.
+\item summit: Summit position in the peak
+\item name: Unique identifier for each peak
+\end{itemize}
+
+An example peaks file can be found in the package. This bed file contains the top peaks for Pax5 ChIP-seq in GM12878, a lymphoblastoid cell line.
+<<peaks, cache=TRUE>>=
+peaks.file <- system.file( "extdata/gm12878_top_pax5_peaks.bed", package="SeqGL" )
+peaks <- read.table (peaks.file, header=TRUE)
+head (peaks)
+@
+
+
+\section{SeqGL wrapper}
+SeqGL has a wrapper function \texttt{run.seqGL} which takes the peaks, organism as inputs and run through the complete pipeline.
+<<wrapper, eval=FALSE>>=
+peaks.file <- system.file( "extdata/gm12878_top_pax5_peaks.bed", package="SeqGL" )
+run.seqGL (peaks.file, out.dir="seqGL.Test/", data.type="ChIP", org="hg19")
+@
+
+The results of the will be present in the \texttt{seqGL.Test} folder and contains the following objects. 
+The test performance is shown in the file \texttt{seqGL.Test/test\_auc.pdf} which shows the ROC plot. See Figure \ref{fig:fig1} for an example.
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale=.5]{figures/auROC}
+\end{center}
+\caption{\textbf{Test auROC for Pax5 peaks}}\label{fig:fig1}
+\end{figure}
+
+The motifs associated with each group can be found in \texttt{seqGL.Test/group\_motifs.html}. A screenshot is shown in Figure \ref{fig:fig2}.
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale=.5]{figures/motifs}
+\end{center}
+\caption{\textbf{Group scores and motifs for Pax5 peaks}}\label{fig:fig2}
+\end{figure}
+
+\pagebreak
+
+The contents of the results folder:
+\begin{itemize}
+\item group\_motifs.html: Html file containing the group scores and motif associated with each group.
+\item test\_auc.pdf: ROC plot showing the performance of the method. auROC varies from $0.5-1$ with being perfect classification.
+\item group\_members: Folder containing peaks associated with each group.
+\item group\_motifs: Folder containing all the HOMER results.
+\item train\_test\_data.Rds R object containing the train and test data.
+\item clustering\_results.Rds R object containing clustering results.
+\item group\_lasso\_results.Rdata R object containing all the group lasso results.
+\end{itemize}
+
+
+\section{SeqGL details}
+This section describes the different steps underlying SeqGL using the Pax5 peaks as an example. The following command will load the library.
+<<load-lib, include=FALSE>>=
+library (SeqGL)
+@
+
+\subsection{Getting data ready for SeqGL}
+
+The first step is to normalize the spans of different peaks and ensure they are all of the same width. We recommed a span of $150$ bases around the peak summit for optimal performance.
+<<load-peaks, cache=TRUE>>=
+peaks.gr <- GRanges (peaks$chrom, IRanges (peaks$chromStart, peaks$chromEnd),
+	summit=peaks$summit, name=peaks$name)
+span <- 150
+pos.regions <- peaks.gr 
+start (pos.regions) <- start (pos.regions) + pos.regions$summit - 1
+end (pos.regions) <- start (pos.regions)
+pos.regions <- resize (pos.regions, span, fix='center')
+@
+
+Then create positive and negative regions. Negative regions are created by shifting the positive regions upstream.
+<<cache=TRUE>>=
+neg.regions <- shift (pos.regions, span*2)
+@
+
+After creating the regions or examples, we build the feature matriices for group lasso. The \texttt{build.features.kernels} function from \texttt{ChIPKernels} package is used for constructing the feature matrices. Wildcard string kernels are used for determining feature matrices. The \texttt{build.train.test.data} function splits the examples into train and test sets, determines sequences for all the examples and then builds the feature matrices. BSgenome package corresponding to the organims should be installed for determining sequences. Specifically, the peaks are for hg19 genome and \texttt{BSgenome.Hsapiens.UCSC.hg19} has to be installed in this example.
+
+<<train-test, cache=TRUE, warning=FALSE>>=
+res.dir <- '/tmp/SeqGLTest'; dir.create (res.dir)
+dictionary.file <- system.file( "extdata/wildcard_dict_kmer8_mismatches2_alpha5_consecutive_mis.Rdata", package="SeqGL" )
+train.test.data <- build.train.test.data (pos.regions, neg.regions, dictionary.file, org='hg19')
+saveRDS (train.test.data, file=sprintf ("%s/train_test_data.Rds", res.dir))
+@
+
+\texttt{train.test.data} is a list containing all the training and test data
+<<>>=
+show (labels (train.test.data))
+@
+
+\subsection{Identification of groups}
+
+The groups are identified by hierarchical clustering of features. \texttt{run.clustering} function to used for hierarchical clustering.
+<<clustering, cache=TRUE>>=
+clustering.results <- run.clustering (train.test.data$train.features, no.groups=20)
+saveRDS (clustering.results, file=sprintf ("%s/clustering_results.Rds", res.dir))
+@
+
+
+
+\subsection{Group lasso}
+
+The groups of kmers are used in a group lasso learning framework. We use the \texttt{spams} toolbox ro run group lasso. We first identify the optimal regularization parameters for group lasso and learn the model using these parameters. The functions \texttt{group.lasso.eval.parameters} and \texttt{run.group.lasso} are used for parameter evaulation and running group lasso respectively.
+<<group-lasso, cache=TRUE, hide=TRUE>>=
+lambdas=c(1e-2, 5e-3, 1e-3, 5e-4, 1e-4)
+param.eval <- group.lasso.eval.parameters (train.test.data$train.features, 
+	train.test.data$train.labels, train.test.data$test.features, 
+	train.test.data$test.labels, clustering.results$groups, 
+	lambdas=lambdas)
+saveRDS (param.eval, file=sprintf ("%s/param_eval.Rds", res.dir))
+@ 
+
+<<cache=TRUE, hide=TRUE>>=
+inds <- which (param.eval$aucs.matrix == max (param.eval$aucs.matrix), arr.ind=TRUE)
+group.lasso.results <- run.group.lasso (train.test.data$train.features, train.test.data$train.labels,
+	train.test.data$test.features, train.test.data$test.labels, clustering.results$groups,
+	param.eval$lambdas[inds[1]], param.eval$lambdas[inds[2]])
+
+@
+
+
+Group rankings and peaks associated with group can be determined using 
+<<cache=TRUE>>=
+group.error.changes <- determine.group.error.changes (train.test.data$train.features, 
+	train.test.data$train.labels, group.lasso.results$w, clustering.results$groups)
+group.scores <- determine.group.scores (train.test.data$train.features, 
+	train.test.data$train.labels, group.lasso.results$w, clustering.results$groups)
+group.members <- determine.group.members  (train.test.data$train.labels, 
+	group.scores, group.error.changes, 
+	test.classes=1)$group.members
+save (group.lasso.results, group.error.changes, group.scores, group.members,
+	file=sprintf ("%s/group_lasso_results.Rdata", res.dir))
+@
+
+Finally, motifs can be generated using HOMER by invoking the function \texttt{group.motifs}
+<<eval=FALSE>>=
+group.motifs (res.dir, dictionary.file,
+	no.cores=1, org="hg19", test.classes=1)
+@
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+

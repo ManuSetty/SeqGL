@@ -1,0 +1,32 @@
+\name{determine.group.scores}
+\alias{determine.group.scores}
+\title{Ranking of groups based on predictive power}
+\usage{
+  determine.group.scores(train.features, labels, group.w,
+    groups, no.cores = 1)
+}
+\arguments{
+  \item{train.features}{Training feature matrix}
+
+  \item{labels}{Training labels (Should be +1/-1)}
+
+  \item{group.w}{Group lasso model}
+
+  \item{groups}{Feature assignment to groups. Each feature
+  should belong to exactly one group.}
+
+  \item{no.cores}{No of cores for parallel processing}
+}
+\value{
+  Matrix with a row for each column. Each group will have
+  the following fields: class (+1/-1), score, group.size
+  (no. of kmers in group), class.size (no. non zero kmers
+  in group), group
+}
+\description{
+  Ranking of groups based on predictive power
+}
+\seealso{
+  \link{\code{run.group.lasso}}
+}
+

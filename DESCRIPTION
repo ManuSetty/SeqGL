@@ -1,0 +1,32 @@
+Package: SeqGL
+Type: Package
+Title: Group lasso for Dnase/ChIP-seq data
+Version: 1.0
+Date: 2013-06-26
+Author: Manu Setty
+Maintainer: Manu Setty <manu@cbio.mskcc.org>
+Description: This package presents a method which uses group lasso to
+    discriminate between bound and non bound regions to accurately identify
+    transcription factors bound at the specific regions.
+License: GPL (>= 2)
+Depends:
+    Biostrings,
+    parallel,
+    ChIPKernels,
+    GenomicRanges,
+    Matrix,
+    spams,
+    WGCNA,
+    fastcluster
+Collate:
+    'build_train_test_data.R'
+    'enriched_regions.R'
+    'get_seqs.R'
+    'group_lasso_utils.R'
+    'group_motifs.R'
+    'misc_utils.R'
+    'ml_utils.R'
+    'run_group_lasso.R'
+    'seqgl_wrappers.R'
+    'SeqGL-internal.R'
+Packaged: 2014-01-02 03:31:55 UTC; manu

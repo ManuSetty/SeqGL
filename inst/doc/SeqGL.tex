@@ -1,0 +1,424 @@
+\documentclass[10pt,oneside]{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\usepackage{breakurl}
+\renewcommand{\familydefault}{\sfdefault} 
+%\usepackage{biolinum}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+
+
+% <<setup, include=FALSE, cache=FALSE>>=
+% library(knitr)
+% # set global chunk options
+% opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
+% options(replace.assign=TRUE,width=90)
+% @
+
+
+\title{\bf{Identification of TF binding profiles from ChIP-seq and Dnase-seq using SeqGL}}
+\author{Manu Setty$^1$, Christina Leslie\\[1em]Computational Biology Program, MSKCC,\\ New York\\
+\texttt{$^1$manu@cbio.mskcc.org}}
+
+
+
+\maketitle
+
+\begin{abstract}
+SeqGL is a new group lasso-based algorithm to extract multiple transcription factor (TF) binding signals from ChIP- and DNase-seq profiles. Benchmarked on over 100 ChIP-seq experiments, SeqGL outperformed traditional motif discovery tools in discriminative accuracy and cofactor detection. SeqGL successfully scales to DNase-seq data, identifying a large multiplicity of TF signals confirmed by ChIP, and can be used with multitask training to learn genomic-context and cell-type specific TF signals.
+\end{abstract}
+
+
+\tableofcontents
+
+\section{Installation}
+The R package can be downloaded from \url{https://bitbucket.org/leslielab/seqgl}. 
+\subsection {Dependencies}
+
+\begin{itemize}
+\item The following bioconductor packages: Biostrings, GenomicRanges, BSgenome, WGCNA, fastcluster, gtools, sfsmisc, kernlab. 
+These packages can be installed using the command 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{source}\hlstd{(}\hlstr{"http://bioconductor.org/biocLite.R"}\hlstd{)}
+\hlkwd{biocLite}\hlstd{(}\hlkwd{c}\hlstd{(}\hlstr{"Biostrings"}\hlstd{,} \hlstr{"GenomicRanges"}\hlstd{,} \hlstr{"BSgenome"}\hlstd{,} \hlstr{"WGCNA"}\hlstd{,} \hlstr{"fastcluster"}\hlstd{,}
+    \hlstr{"gtools"}\hlstd{,} \hlstr{"sfsmisc"}\hlstd{,} \hlstr{"kernlab"}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\item ChIPKernels package for wildcard kernel. This package can be downloaded from \url{https://bitbucket.org/leslielab/chipkernels}.
+
+\item spams toolbox for running group lasso. Download and install the R package from \url{http://spams-devel.gforge.inria.fr/downloads.html}.
+
+\item HOMER motif finding tool for associating groups with motifs. \url{http://biowhat.ucsd.edu/homer/ngs/index.html}.
+
+\item BSgenome package for the organisms of your choice from Bioconductor. Example if the peaks are from hg19, install BSgenome.Hsapiens.UCSC.hg19 from \url{http://bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg19.html}. The example detailed in this vignette assumes this package has been installed.
+
+\end{itemize}
+
+After all the dependencies are installed, SeqGL can be installed from source using \texttt{R CMD INSTALL <path to package>}.
+
+\section{Inputs}
+Chip-seq or DNase-seq peaks are the inputs to SeqGL. The peaks should be provided in bed format and should contain the following columns.
+\begin{itemize}
+\item chrom: Chromosome 
+\item start: Genomic start
+\item end: Genomic end
+\item strand: Strand
+\item score: Score to rank the peaks. Can be ${-log (p-value)}$.
+\item summit: Summit position in the peak
+\item name: Unique identifier for each peak
+\end{itemize}
+
+An example peaks file can be found in the package. This bed file contains the top peaks for Pax5 ChIP-seq in GM12878, a lymphoblastoid cell line.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{peaks.file} \hlkwb{<-} \hlkwd{system.file}\hlstd{(}\hlstr{"extdata/gm12878_top_pax5_peaks.bed"}\hlstd{,} \hlkwc{package} \hlstd{=} \hlstr{"SeqGL"}\hlstd{)}
+\hlstd{peaks} \hlkwb{<-} \hlkwd{read.table}\hlstd{(peaks.file,} \hlkwc{header} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\hlkwd{head}\hlstd{(peaks)}
+\end{alltt}
+\begin{verbatim}
+##   chrom chromStart  chromEnd strand score summit  name
+## 1  chr5   77590380  77590682      *  3132    157 Peak1
+## 2  chr2   25585594  25585887      *  3122    145 Peak2
+## 3  chr1  109655284 109655582      *  3100    145 Peak3
+## 4  chr1  150601613 150601900      *  3100    145 Peak4
+## 5 chr10    5882276   5882572      *  3100    148 Peak5
+## 6 chr10  112116318 112116697      *  3100    193 Peak6
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+\section{SeqGL wrapper}
+SeqGL has a wrapper function \texttt{run.seqGL} which takes the peaks, organism as inputs and run through the complete pipeline.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{peaks.file} \hlkwb{<-} \hlkwd{system.file}\hlstd{(}\hlstr{"extdata/gm12878_top_pax5_peaks.bed"}\hlstd{,} \hlkwc{package} \hlstd{=} \hlstr{"SeqGL"}\hlstd{)}
+\hlkwd{run.seqGL}\hlstd{(peaks.file,} \hlkwc{out.dir} \hlstd{=} \hlstr{"seqGL.Test/"}\hlstd{,} \hlkwc{data.type} \hlstd{=} \hlstr{"ChIP"}\hlstd{,} \hlkwc{org} \hlstd{=} \hlstr{"hg19"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+The results of the will be present in the \texttt{seqGL.Test} folder and contains the following objects. 
+The test performance is shown in the file \texttt{seqGL.Test/test\_auc.pdf} which shows the ROC plot. See Figure \ref{fig:fig1} for an example.
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale=.5]{figures/auROC}
+\end{center}
+\caption{\textbf{Test auROC for Pax5 peaks}}\label{fig:fig1}
+\end{figure}
+
+The motifs associated with each group can be found in \texttt{seqGL.Test/group\_motifs.html}. A screenshot is shown in Figure \ref{fig:fig2}.
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale=.5]{figures/motifs}
+\end{center}
+\caption{\textbf{Group scores and motifs for Pax5 peaks}}\label{fig:fig2}
+\end{figure}
+
+\pagebreak
+
+The contents of the results folder:
+\begin{itemize}
+\item group\_motifs.html: Html file containing the group scores and motif associated with each group.
+\item test\_auc.pdf: ROC plot showing the performance of the method. auROC varies from $0.5-1$ with being perfect classification.
+\item group\_members: Folder containing peaks associated with each group.
+\item group\_motifs: Folder containing all the HOMER results.
+\item train\_test\_data.Rds R object containing the train and test data.
+\item clustering\_results.Rds R object containing clustering results.
+\item group\_lasso\_results.Rdata R object containing all the group lasso results.
+\end{itemize}
+
+
+\section{SeqGL details}
+This section describes the different steps underlying SeqGL using the Pax5 peaks as an example. The following command will load the library.
+
+
+
+\subsection{Getting data ready for SeqGL}
+
+The first step is to normalize the spans of different peaks and ensure they are all of the same width. We recommed a span of $150$ bases around the peak summit for optimal performance.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{peaks.gr} \hlkwb{<-} \hlkwd{GRanges}\hlstd{(peaks}\hlopt{$}\hlstd{chrom,} \hlkwd{IRanges}\hlstd{(peaks}\hlopt{$}\hlstd{chromStart, peaks}\hlopt{$}\hlstd{chromEnd),}
+    \hlkwc{summit} \hlstd{= peaks}\hlopt{$}\hlstd{summit,} \hlkwc{name} \hlstd{= peaks}\hlopt{$}\hlstd{name)}
+\hlstd{span} \hlkwb{<-} \hlnum{150}
+\hlstd{pos.regions} \hlkwb{<-} \hlstd{peaks.gr}
+\hlkwd{start}\hlstd{(pos.regions)} \hlkwb{<-} \hlkwd{start}\hlstd{(pos.regions)} \hlopt{+} \hlstd{pos.regions}\hlopt{$}\hlstd{summit} \hlopt{-} \hlnum{1}
+\hlkwd{end}\hlstd{(pos.regions)} \hlkwb{<-} \hlkwd{start}\hlstd{(pos.regions)}
+\hlstd{pos.regions} \hlkwb{<-} \hlkwd{resize}\hlstd{(pos.regions, span,} \hlkwc{fix} \hlstd{=} \hlstr{"center"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+Then create positive and negative regions. Negative regions are created by shifting the positive regions upstream.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{neg.regions} \hlkwb{<-} \hlkwd{shift}\hlstd{(pos.regions, span} \hlopt{*} \hlnum{2}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+After creating the regions or examples, we build the feature matriices for group lasso. The \texttt{build.features.kernels} function from \texttt{ChIPKernels} package is used for constructing the feature matrices. Wildcard string kernels are used for determining feature matrices. The \texttt{build.train.test.data} function splits the examples into train and test sets, determines sequences for all the examples and then builds the feature matrices. BSgenome package corresponding to the organims should be installed for determining sequences. Specifically, the peaks are for hg19 genome and \texttt{BSgenome.Hsapiens.UCSC.hg19} has to be installed in this example.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{res.dir} \hlkwb{<-} \hlstr{"/tmp/SeqGLTest"}
+\hlkwd{dir.create}\hlstd{(res.dir)}
+\hlstd{dictionary.file} \hlkwb{<-} \hlkwd{system.file}\hlstd{(}\hlstr{"extdata/wildcard_dict_kmer8_mismatches2_alpha5_consecutive_mis.Rdata"}\hlstd{,}
+    \hlkwc{package} \hlstd{=} \hlstr{"SeqGL"}\hlstd{)}
+\hlstd{train.test.data} \hlkwb{<-} \hlkwd{build.train.test.data}\hlstd{(pos.regions, neg.regions, dictionary.file,}
+    \hlkwc{org} \hlstd{=} \hlstr{"hg19"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] "Extract sequences for all examples..."
+## [1] "Time for extracting sequences: 0.53 minutes"
+## [1] "Building features from dictionary..."
+## [1] "Position 1 of 143"
+## [1] "Position 21 of 143"
+## [1] "Position 41 of 143"
+## [1] "Position 61 of 143"
+## [1] "Position 81 of 143"
+## [1] "Position 101 of 143"
+## [1] "Position 121 of 143"
+## [1] "Position 141 of 143"
+## [1] "Time for determining features : 1.50"
+## [1] "Selecting top features..."
+## [1] "Time for selecting features: 0.37 minutes"
+## [1] "Package and return..."
+## [1] "Total time for constructing data: 2.43 minutes"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{saveRDS}\hlstd{(train.test.data,} \hlkwc{file} \hlstd{=} \hlkwd{sprintf}\hlstd{(}\hlstr{"%s/train_test_data.Rds"}\hlstd{, res.dir))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\texttt{train.test.data} is a list containing all the training and test data
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{show}\hlstd{(}\hlkwd{labels}\hlstd{(train.test.data))}
+\end{alltt}
+\begin{verbatim}
+##  [1] "train.features"  "test.features"   "train.inds"     
+##  [4] "test.inds"       "feature.inds"    "train.labels"   
+##  [7] "test.labels"     "train.regions"   "test.regions"   
+## [10] "dictionary.file" "train.seqs"      "test.seqs"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\subsection{Identification of groups}
+
+The groups are identified by hierarchical clustering of features. \texttt{run.clustering} function to used for hierarchical clustering.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{clustering.results} \hlkwb{<-} \hlkwd{run.clustering}\hlstd{(train.test.data}\hlopt{$}\hlstd{train.features,} \hlkwc{no.groups} \hlstd{=} \hlnum{20}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] "Running clustering..."
+## [1] "Time for running clustering: 2.22 minutes"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{saveRDS}\hlstd{(clustering.results,} \hlkwc{file} \hlstd{=} \hlkwd{sprintf}\hlstd{(}\hlstr{"%s/clustering_results.Rds"}\hlstd{, res.dir))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+
+
+\subsection{Group lasso}
+
+The groups of kmers are used in a group lasso learning framework. We use the \texttt{spams} toolbox ro run group lasso. We first identify the optimal regularization parameters for group lasso and learn the model using these parameters. The functions \texttt{group.lasso.eval.parameters} and \texttt{run.group.lasso} are used for parameter evaulation and running group lasso respectively.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{lambdas} \hlkwb{=} \hlkwd{c}\hlstd{(}\hlnum{0.01}\hlstd{,} \hlnum{0.005}\hlstd{,} \hlnum{0.001}\hlstd{,} \hlnum{5e-04}\hlstd{,} \hlnum{1e-04}\hlstd{)}
+\hlstd{param.eval} \hlkwb{<-} \hlkwd{group.lasso.eval.parameters}\hlstd{(train.test.data}\hlopt{$}\hlstd{train.features, train.test.data}\hlopt{$}\hlstd{train.labels,}
+    \hlstd{train.test.data}\hlopt{$}\hlstd{test.features, train.test.data}\hlopt{$}\hlstd{test.labels, clustering.results}\hlopt{$}\hlstd{groups,}
+    \hlkwc{lambdas} \hlstd{= lambdas)}
+\end{alltt}
+\begin{verbatim}
+## [1] "Running crossvalidation ..."
+## [1] "i: 1 of 5, j: 1 of 5"
+## [1] "i: 1 of 5, j: 2 of 5"
+## [1] "i: 1 of 5, j: 3 of 5"
+## [1] "i: 1 of 5, j: 4 of 5"
+## [1] "i: 1 of 5, j: 5 of 5"
+## [1] "i: 2 of 5, j: 1 of 5"
+## [1] "i: 2 of 5, j: 2 of 5"
+## [1] "i: 2 of 5, j: 3 of 5"
+## [1] "i: 2 of 5, j: 4 of 5"
+## [1] "i: 2 of 5, j: 5 of 5"
+## [1] "i: 3 of 5, j: 1 of 5"
+## [1] "i: 3 of 5, j: 2 of 5"
+## [1] "i: 3 of 5, j: 3 of 5"
+## [1] "i: 3 of 5, j: 4 of 5"
+## [1] "i: 3 of 5, j: 5 of 5"
+## [1] "i: 4 of 5, j: 1 of 5"
+## [1] "i: 4 of 5, j: 2 of 5"
+## [1] "i: 4 of 5, j: 3 of 5"
+## [1] "i: 4 of 5, j: 4 of 5"
+## [1] "i: 4 of 5, j: 5 of 5"
+## [1] "i: 5 of 5, j: 1 of 5"
+## [1] "i: 5 of 5, j: 2 of 5"
+## [1] "i: 5 of 5, j: 3 of 5"
+## [1] "i: 5 of 5, j: 4 of 5"
+## [1] "i: 5 of 5, j: 5 of 5"
+## [1] "Time for running crossvalidation: 1.48 minutes"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{saveRDS}\hlstd{(param.eval,} \hlkwc{file} \hlstd{=} \hlkwd{sprintf}\hlstd{(}\hlstr{"%s/param_eval.Rds"}\hlstd{, res.dir))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{inds} \hlkwb{<-} \hlkwd{which}\hlstd{(param.eval}\hlopt{$}\hlstd{aucs.matrix} \hlopt{==} \hlkwd{max}\hlstd{(param.eval}\hlopt{$}\hlstd{aucs.matrix),} \hlkwc{arr.ind} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\hlstd{group.lasso.results} \hlkwb{<-} \hlkwd{run.group.lasso}\hlstd{(train.test.data}\hlopt{$}\hlstd{train.features, train.test.data}\hlopt{$}\hlstd{train.labels,}
+    \hlstd{train.test.data}\hlopt{$}\hlstd{test.features, train.test.data}\hlopt{$}\hlstd{test.labels, clustering.results}\hlopt{$}\hlstd{groups,}
+    \hlstd{param.eval}\hlopt{$}\hlstd{lambdas[inds[}\hlnum{1}\hlstd{]], param.eval}\hlopt{$}\hlstd{lambdas[inds[}\hlnum{2}\hlstd{]])}
+\end{alltt}
+\begin{verbatim}
+## [1] "Running group lasso..."
+## [1] "Time for running group lasso: 0.08 minutes"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+Group rankings and peaks associated with group can be determined using 
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{group.error.changes} \hlkwb{<-} \hlkwd{determine.group.error.changes}\hlstd{(train.test.data}\hlopt{$}\hlstd{train.features,}
+    \hlstd{train.test.data}\hlopt{$}\hlstd{train.labels, group.lasso.results}\hlopt{$}\hlstd{w, clustering.results}\hlopt{$}\hlstd{groups)}
+\hlstd{group.scores} \hlkwb{<-} \hlkwd{determine.group.scores}\hlstd{(train.test.data}\hlopt{$}\hlstd{train.features, train.test.data}\hlopt{$}\hlstd{train.labels,}
+    \hlstd{group.lasso.results}\hlopt{$}\hlstd{w, clustering.results}\hlopt{$}\hlstd{groups)}
+\end{alltt}
+\begin{verbatim}
+## [1] "Time for determining group scores: 0.00"
+\end{verbatim}
+\begin{alltt}
+\hlstd{group.members} \hlkwb{<-} \hlkwd{determine.group.members}\hlstd{(train.test.data}\hlopt{$}\hlstd{train.labels, group.scores,}
+    \hlstd{group.error.changes,} \hlkwc{test.classes} \hlstd{=} \hlnum{1}\hlstd{)}\hlopt{$}\hlstd{group.members}
+\end{alltt}
+\begin{verbatim}
+## [1] "Time for determining group members: 0.02"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{save}\hlstd{(group.lasso.results, group.error.changes, group.scores, group.members,}
+    \hlkwc{file} \hlstd{=} \hlkwd{sprintf}\hlstd{(}\hlstr{"%s/group_lasso_results.Rdata"}\hlstd{, res.dir))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+Finally, motifs can be generated using HOMER by invoking the function \texttt{group.motifs}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{group.motifs}\hlstd{(res.dir, dictionary.file,} \hlkwc{no.cores} \hlstd{=} \hlnum{1}\hlstd{,} \hlkwc{org} \hlstd{=} \hlstr{"hg19"}\hlstd{,} \hlkwc{test.classes} \hlstd{=} \hlnum{1}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+

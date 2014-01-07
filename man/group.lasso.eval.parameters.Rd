@@ -1,0 +1,38 @@
+\name{group.lasso.eval.parameters}
+\alias{group.lasso.eval.parameters}
+\title{Group lasso cross validation}
+\usage{
+  group.lasso.eval.parameters(train.features, train.labels,
+    test.features, test.labels, groups,
+    lambdas = c(0.01, 0.005, 0.001, 5e-04, 1e-04),
+    no.cores = 1)
+}
+\arguments{
+  \item{train.features}{Training feature matrix}
+
+  \item{train.labels}{Training labels (Should be +1/-1)}
+
+  \item{test.features}{Test feature matrix}
+
+  \item{test.labels}{Test labels (Should be +1/-1)}
+
+  \item{groups}{Feature assignment to groups. Each feature
+  should belong to exactly one group}
+
+  \item{lambdas}{Vector of regularization parameters}
+
+  \item{no.cores}{Number of cores for parallel processing}
+}
+\value{
+  List containing \code{lambdas} and a matrix of test aucs
+  named \code{auc.matrix}
+}
+\description{
+  Using the spams toolbox to run group lasso at various
+  parameters to identify parameter combination with best
+  test auc.
+}
+\seealso{
+  \link{\code{run.group.lasso}}
+}
+

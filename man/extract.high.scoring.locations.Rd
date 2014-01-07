@@ -1,0 +1,37 @@
+\name{extract.high.scoring.locations}
+\alias{extract.high.scoring.locations}
+\title{Function to extract high scoring regions for a particular group}
+\usage{
+  extract.high.scoring.locations(test.group, test.class,
+    seqs, regions, group.model, dictionary.file,
+    bed.file = NULL, half.binding.width = 25)
+}
+\arguments{
+  \item{test.group}{Group to be tested}
+
+  \item{test.class}{Class of the group being tested}
+
+  \item{seqs}{Sequences of examples belonging to group}
+
+  \item{regions}{Genomic location of examples belonging to
+  group}
+
+  \item{group.model}{Logistic regression model for the
+  particular group}
+
+  \item{dictionary.file}{Dictionary file for the kernel
+  build using \code{ChIPKernels}}
+
+  \item{bed.file}{Bed file for writing extracted regions}
+
+  \item{half.binding.width}{Half of the enriched region
+  size}
+}
+\value{
+  GRanges object of enriched regions
+}
+\description{
+  Function to extract high scoring regions for a particular
+  group
+}
+

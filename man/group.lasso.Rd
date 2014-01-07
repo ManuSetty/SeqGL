@@ -1,0 +1,29 @@
+\name{group.lasso}
+\alias{group.lasso}
+\title{Function to run group lasso with the specified parameters}
+\usage{
+  group.lasso(features, labels, groups, lambda1, lambda2,
+    no.cores = 1)
+}
+\arguments{
+  \item{features}{Feature matrix}
+
+  \item{labels}{Example labels (Should be +1/-1)}
+
+  \item{groups}{Feature assignment to groups. Each feature
+  should belong to exactly one group}
+
+  \item{lambda1,}{lambda2 Regularization parameters}
+
+  \item{no.cores}{Number of cores for parallel processing}
+}
+\value{
+  The w vector, weights of each feature
+}
+\description{
+  Using the spams toolbox to run group lasso
+}
+\seealso{
+  \link{\code{run.group.lasso}}
+}
+
