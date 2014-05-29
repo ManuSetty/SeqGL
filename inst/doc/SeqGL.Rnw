@@ -13,6 +13,8 @@
 \hypersetup{
  pdfstartview={XYZ null null 1}}
 \usepackage{breakurl}
+\usepackage{epsfig}
+\usepackage{subfigure}
 \renewcommand{\familydefault}{\sfdefault} 
 %\usepackage{biolinum}
 \begin{document}
@@ -78,9 +80,9 @@ Chip-seq or DNase-seq peaks are the inputs to SeqGL. The peaks should be provide
 \item name: Unique identifier for each peak
 \end{itemize}
 
-An example peaks file can be found in the package. This bed file contains the top peaks for Pax5 ChIP-seq in GM12878, a lymphoblastoid cell line.
+An example peaks file can be found in the package. This bed file contains the top peaks for IRF4 ChIP-seq in GM12878, a lymphoblastoid cell line.
 <<peaks, cache=TRUE>>=
-peaks.file <- system.file( "extdata/gm12878_top_pax5_peaks.bed", package="SeqGL" )
+peaks.file <- system.file( "extdata/gm12878_top_irf4_peaks.bed", package="SeqGL" )
 peaks <- read.table (peaks.file, header=TRUE)
 head (peaks)
 @
@@ -89,7 +91,7 @@ head (peaks)
 \section{SeqGL wrapper}
 SeqGL has a wrapper function \texttt{run.seqGL} which takes the peaks, organism as inputs and run through the complete pipeline.
 <<wrapper, eval=FALSE>>=
-peaks.file <- system.file( "extdata/gm12878_top_pax5_peaks.bed", package="SeqGL" )
+peaks.file <- system.file( "extdata/gm12878_top_irf4_peaks.bed", package="SeqGL" )
 run.seqGL (peaks.file, out.dir="seqGL.Test/", data.type="ChIP", org="hg19")
 @
 
@@ -98,17 +100,17 @@ The test performance is shown in the file \texttt{seqGL.Test/test\_auc.pdf} whic
 
 \begin{figure}[h!]
 \begin{center}
-\includegraphics[scale=.5]{figures/auROC}
+\includegraphics[width=.75\textwidth]{figures/auROC}
 \end{center}
-\caption{\textbf{Test auROC for Pax5 peaks}}\label{fig:fig1}
+\caption{\textbf{Test auROC for IRF4 peaks}}\label{fig:fig1}
 \end{figure}
 
 The motifs associated with each group can be found in \texttt{seqGL.Test/group\_motifs.html}. A screenshot is shown in Figure \ref{fig:fig2}.
 \begin{figure}[h!]
 \begin{center}
-\includegraphics[scale=.5]{figures/motifs}
+\includegraphics[width=.75\textwidth]{figures/motifs}
 \end{center}
-\caption{\textbf{Group scores and motifs for Pax5 peaks}}\label{fig:fig2}
+\caption{\textbf{Group scores and motifs for IRF peaks}}\label{fig:fig2}
 \end{figure}
 
 \pagebreak
@@ -126,7 +128,7 @@ The contents of the results folder:
 
 
 \section{SeqGL details}
-This section describes the different steps underlying SeqGL using the Pax5 peaks as an example. The following command will load the library.
+This section describes the different steps underlying SeqGL using the IRF4 peaks as an example. The following command will load the library.
 <<load-lib, include=FALSE>>=
 library (SeqGL)
 @

@@ -93,7 +93,7 @@ SeqGL is a new group lasso-based algorithm to extract multiple transcription fac
 \tableofcontents
 
 \section{Installation}
-The R package can be downloaded from \url{https://bitbucket.org/leslielab/seqgl}. SeqGL was tested using R 3.0.2.
+The R package can be downloaded from \url{https://bitbucket.org/leslielab/seqgl}. 
 \subsection {Dependencies}
 
 \begin{itemize}
@@ -144,12 +144,12 @@ An example peaks file can be found in the package. This bed file contains the to
 \end{alltt}
 \begin{verbatim}
 ##   chrom chromStart  chromEnd strand score summit  name
-## 1  chr5   77590380  77590682      *  3132    157 Peak1
-## 2  chr2   25585594  25585887      *  3122    145 Peak2
-## 3  chr1  109655284 109655582      *  3100    145 Peak3
-## 4  chr1  150601613 150601900      *  3100    145 Peak4
-## 5 chr10    5882276   5882572      *  3100    148 Peak5
-## 6 chr10  112116318 112116697      *  3100    193 Peak6
+## 1  chr5   77590461  77590610      *  3132    157 Peak1
+## 2  chr2   25585663  25585812      *  3122    145 Peak2
+## 3  chr1  109655353 109655502      *  3100    145 Peak3
+## 4  chr1  150601682 150601831      *  3100    145 Peak4
+## 5 chr10    5882348   5882497      *  3100    148 Peak5
+## 6 chr10  112116435 112116584      *  3100    193 Peak6
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -216,6 +216,10 @@ The first step is to normalize the spans of different peaks and ensure they are 
 \hlstd{span} \hlkwb{<-} \hlnum{150}
 \hlstd{pos.regions} \hlkwb{<-} \hlstd{peaks.gr}
 \hlkwd{start}\hlstd{(pos.regions)} \hlkwb{<-} \hlkwd{start}\hlstd{(pos.regions)} \hlopt{+} \hlstd{pos.regions}\hlopt{$}\hlstd{summit} \hlopt{-} \hlnum{1}
+\end{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: invalid class "{}IRanges"{} object: 'widths(x)' cannot contain negative values}}\begin{alltt}
 \hlkwd{end}\hlstd{(pos.regions)} \hlkwb{<-} \hlkwd{start}\hlstd{(pos.regions)}
 \hlstd{pos.regions} \hlkwb{<-} \hlkwd{resize}\hlstd{(pos.regions, span,} \hlkwc{fix} \hlstd{=} \hlstr{"center"}\hlstd{)}
 \end{alltt}
@@ -247,7 +251,7 @@ After creating the regions or examples, we build the feature matriices for group
 \end{alltt}
 \begin{verbatim}
 ## [1] "Extract sequences for all examples..."
-## [1] "Time for extracting sequences: 0.53 minutes"
+## [1] "Time for extracting sequences: 0.63 minutes"
 ## [1] "Building features from dictionary..."
 ## [1] "Position 1 of 143"
 ## [1] "Position 21 of 143"
@@ -257,11 +261,11 @@ After creating the regions or examples, we build the feature matriices for group
 ## [1] "Position 101 of 143"
 ## [1] "Position 121 of 143"
 ## [1] "Position 141 of 143"
-## [1] "Time for determining features : 1.50"
+## [1] "Time for determining features : 1.65"
 ## [1] "Selecting top features..."
-## [1] "Time for selecting features: 0.37 minutes"
+## [1] "Time for selecting features: 0.40 minutes"
 ## [1] "Package and return..."
-## [1] "Total time for constructing data: 2.43 minutes"
+## [1] "Total time for constructing data: 2.72 minutes"
 \end{verbatim}
 \begin{alltt}
 \hlkwd{saveRDS}\hlstd{(train.test.data,} \hlkwc{file} \hlstd{=} \hlkwd{sprintf}\hlstd{(}\hlstr{"%s/train_test_data.Rds"}\hlstd{, res.dir))}
@@ -296,7 +300,7 @@ The groups are identified by hierarchical clustering of features. \texttt{run.cl
 \end{alltt}
 \begin{verbatim}
 ## [1] "Running clustering..."
-## [1] "Time for running clustering: 2.22 minutes"
+## [1] "Time for running clustering: 2.42 minutes"
 \end{verbatim}
 \begin{alltt}
 \hlkwd{saveRDS}\hlstd{(clustering.results,} \hlkwc{file} \hlstd{=} \hlkwd{sprintf}\hlstd{(}\hlstr{"%s/clustering_results.Rds"}\hlstd{, res.dir))}
@@ -345,7 +349,7 @@ The groups of kmers are used in a group lasso learning framework. We use the \te
 ## [1] "i: 5 of 5, j: 3 of 5"
 ## [1] "i: 5 of 5, j: 4 of 5"
 ## [1] "i: 5 of 5, j: 5 of 5"
-## [1] "Time for running crossvalidation: 1.48 minutes"
+## [1] "Time for running crossvalidation: 1.83 minutes"
 \end{verbatim}
 \begin{alltt}
 \hlkwd{saveRDS}\hlstd{(param.eval,} \hlkwc{file} \hlstd{=} \hlkwd{sprintf}\hlstd{(}\hlstr{"%s/param_eval.Rds"}\hlstd{, res.dir))}
@@ -364,7 +368,7 @@ The groups of kmers are used in a group lasso learning framework. We use the \te
 \end{alltt}
 \begin{verbatim}
 ## [1] "Running group lasso..."
-## [1] "Time for running group lasso: 0.08 minutes"
+## [1] "Time for running group lasso: 0.10 minutes"
 \end{verbatim}
 \end{kframe}
 \end{knitrout}

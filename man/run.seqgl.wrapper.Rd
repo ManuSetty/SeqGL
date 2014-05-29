@@ -6,7 +6,7 @@
     res.dir, dictionary.file, no.groups = 500,
     lambdas = c(0.01, 0.005, 0.001, 5e-04, 1e-04),
     no.cores = 1, motifs = FALSE, test.classes = c(1, -1),
-    ...)
+    fdr.cutoff = 0.05, ...)
 }
 \arguments{
   \item{pos.regions}{GRanges object of positive regions}
@@ -32,6 +32,9 @@
 
   \item{test.classes}{Which of the test classes to find
   motifs for}
+
+  \item{fdr.cutoff}{FDR cutoff for identifying examples
+  best predicted by each group}
 
   \item{...}{Additional arguments to bulid.train.test.data}
 }

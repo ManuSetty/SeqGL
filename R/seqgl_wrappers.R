@@ -12,6 +12,7 @@
 #' @param no.cores Number of cores for parallel processing
 #' @param motifs Logical indicating if motifs should be computed
 #' @param test.classes Which of the test classes to find motifs for
+#' @param fdr.cutoff FDR cutoff for identifying examples best predicted by each group
 #' @param ... Additional arguments to bulid.train.test.data
 #' @details The positive and negative regions will be split evenly to create training and test sets
 #' @return GRanges object of enriched regions
@@ -19,7 +20,7 @@
 
 run.seqGL.wrapper <- function (pos.regions, neg.regions, org='hg19', res.dir,
 	dictionary.file, no.groups=500, lambdas=c(1e-2, 5e-3, 1e-3, 5e-4, 1e-4),
-	no.cores = 1, motifs=FALSE, test.classes=c(1, -1), ...) {
+	no.cores = 1, motifs=FALSE, test.classes=c(1, -1), fdr.cutoff=0.05, ...) {
  
 	# Determine data
 	train.test.data <- build.train.test.data (pos.regions, neg.regions, dictionary.file, org=org, ...)
@@ -48,7 +49,7 @@ run.seqGL.wrapper <- function (pos.regions, neg.regions, org='hg19', res.dir,
 	group.scores <- determine.group.scores (train.test.data$train.features, 
 		train.test.data$train.labels, group.lasso.results$w, clustering.results$groups, no.cores)
 	group.members <- determine.group.members  (train.test.data$train.labels, 
-		group.scores, group.error.changes, 
+		group.scores, group.error.changes, fdr.cutoff=fdr.cutoff,
 		no.cores=no.cores, test.classes=test.classes)$group.members
 	save (group.lasso.results, group.error.changes, group.scores, group.members,
 		file=sprintf ("%s/group_lasso_results.Rdata", res.dir))
@@ -81,7 +82,7 @@ run.seqGL.wrapper <- function (pos.regions, neg.regions, org='hg19', res.dir,
 #' @export
 
 run.seqGL <- function (peaks.file, out.dir, data.type, org,
-	span=150, max.examples=5000,  no.cores = 1,
+	span=150, max.examples=ifelse (data.type == 'ChIP', 5e3, 4e4),  no.cores = 1,
 	no.groups=ifelse (data.type == 'ChIP', 20, 100),
 	dictionary.file=system.file( "extdata/wildcard_dict_kmer8_mismatches2_alpha5_consecutive_mis.Rdata", package="SeqGL" )) {
 
@@ -89,10 +90,12 @@ run.seqGL <- function (peaks.file, out.dir, data.type, org,
 
 	# Set up constants
 	if (data.type == 'ChIP') {
-		feature.count <- 5000
+		feature.count <- 10000
+		fdr.cutoff <- 0.1
 	} 
 	if (data.type == 'DNase') {
-		feature.count <- 15000
+		feature.count <- 25000
+		fdr.cutoff <- 0.01
 	}
 
 	show ('Determining training and test sets for SeqGL... ')
@@ -135,7 +138,7 @@ run.seqGL <- function (peaks.file, out.dir, data.type, org,
 	# Run group lasso
 	show ('Running SeqGL...')
 	run.seqGL.wrapper (pos.regions, neg.regions, org, out.dir,
-		dictionary.file, no.groups, no.cores = no.cores, 
+		dictionary.file, no.groups, no.cores = no.cores, fdr.cutoff=fdr.cutoff,
 		motifs=TRUE, test.classes=1, feature.count=feature.count)
 	show ('SeqGL complete')
 
@@ -163,7 +166,7 @@ run.seqGL <- function (peaks.file, out.dir, data.type, org,
 	group.scores <- determine.group.scores (all.features, all.labels,
 		group.lasso.results$w, clustering.results$groups, no.cores)
 	group.members <- determine.group.members  (all.labels,
-		group.scores, group.error.changes, 
+		group.scores, group.error.changes, fdr.cutoff=fdr.cutoff,
 		no.cores=no.cores, test.classes=1)$group.members
 	colnames (group.members) <- sprintf ("Group%d", 1:ncol (group.members))
 

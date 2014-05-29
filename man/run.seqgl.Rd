@@ -3,7 +3,9 @@
 \title{SeqGL pipeline}
 \usage{
   run.seqGL(peaks.file, out.dir, data.type, org,
-    span = 150, max.examples = 5000, no.cores = 1,
+    span = 150,
+    max.examples = ifelse(data.type == "ChIP", 5000, 40000),
+    no.cores = 1,
     no.groups = ifelse(data.type == "ChIP", 20, 100),
     dictionary.file = system.file("extdata/wildcard_dict_kmer8_mismatches2_alpha5_consecutive_mis.Rdata", package = "SeqGL"))
 }

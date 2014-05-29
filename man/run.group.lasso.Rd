@@ -4,7 +4,7 @@
 \usage{
   run.group.lasso(train.features, train.labels,
     test.features, test.labels, groups, lambda1, lambda2,
-    no.cores)
+    no.cores = 1)
 }
 \arguments{
   \item{train.features}{Training feature matrix}

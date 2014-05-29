@@ -1,7 +1,7 @@
 Package: SeqGL
 Type: Package
 Title: Group lasso for Dnase/ChIP-seq data
-Version: 1.0
+Version: 1.0.1
 Date: 2013-06-26
 Author: Manu Setty
 Maintainer: Manu Setty <manu@cbio.mskcc.org>
