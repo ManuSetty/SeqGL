@@ -44,14 +44,14 @@ run.seqGL.wrapper <- function (pos.regions, neg.regions, org='hg19', res.dir,
 
 	# Determine group error changes and scores
 	show ('Determing scores and memberes...')
-	group.error.changes <- determine.group.error.changes (train.test.data$train.features, 
+	peak.scores <- determine.peak.scores (train.test.data$train.features, 
 		train.test.data$train.labels, group.lasso.results$w, clustering.results$groups)
 	group.scores <- determine.group.scores (train.test.data$train.features, 
 		train.test.data$train.labels, group.lasso.results$w, clustering.results$groups, no.cores)
 	group.members <- determine.group.members  (train.test.data$train.labels, 
-		group.scores, group.error.changes, fdr.cutoff=fdr.cutoff,
+		group.scores, peak.scores, fdr.cutoff=fdr.cutoff,
 		no.cores=no.cores, test.classes=test.classes)$group.members
-	save (group.lasso.results, group.error.changes, group.scores, group.members,
+	save (group.lasso.results, peak.scores, group.scores, group.members,
 		file=sprintf ("%s/group_lasso_results.Rdata", res.dir))
 
 	# Run group lasso motifs
@@ -98,6 +98,11 @@ run.seqGL <- function (peaks.file, out.dir, data.type, org,
 		fdr.cutoff <- 0.01
 	}
 
+	# Create output directory if necessary
+	if (!dir.exists (out.dir))
+		dir.create (out.dir, recursive=TRUE)
+
+
 	show ('Determining training and test sets for SeqGL... ')
 	time.start <- get.time ()
 	# Read peaks, convert to GRanges and sort
@@ -117,6 +122,20 @@ run.seqGL <- function (peaks.file, out.dir, data.type, org,
 	all.regions <- all.regions[sort (all.regions$score, index.return=TRUE, decreasing=TRUE)$ix]
 	start (all.regions) <- end (all.regions) <- start (all.regions) + all.regions$summit - 1
 	all.regions <- resize (all.regions, fix='center', span)
+
+	# Negative regions
+	neg.regions <- shift (all.regions, span * 2)
+
+	# Identify sequences and flag any sequences with N
+	pos.seqs <- get.seqs (load.bsgenome (org), all.regions)
+	neg.seqs <- get.seqs (load.bsgenome (org), neg.regions)
+	seqs.with.n <- union(grep ('N', pos.seqs), grep ('N', neg.seqs))
+	full.regions.list <- all.regions
+	if (length(seqs.with.n) > 0) {
+		show ('Some peaks and/or their flanks have Ns in sequences and will not be assigned to any groups' )
+		all.regions <- all.regions[-seqs.with.n]		
+	}
+
 
 	# Positive and negative examples
 	pos.regions <- all.regions[1:min (max.examples, length (all.regions))]
@@ -154,28 +173,53 @@ run.seqGL <- function (peaks.file, out.dir, data.type, org,
 	get.auc (train.test.data$test.labels, group.lasso.results$test.preds,
 		sprintf ("%s/test_auc.pdf", out.dir))
 
+
     # Sequences and labels
 	all.negs <- shift (all.regions, span*2)
-	all.features <- build.features.kernels (dictionary.file, get.seqs (load.bsgenome (org),
-                                  c(all.regions, all.negs)), kmers=colnames (train.test.data$train.features), verbose=FALSE)$features
+	if (length(seqs.with.n) > 0) {
+		seqs <- c(pos.seqs[-seqs.with.n], neg.seqs[-seqs.with.n])
+	}
+	all.features <- build.features.kernels (dictionary.file, seqs,
+		, kmers=colnames (train.test.data$train.features), verbose=FALSE)$features
 	all.labels <- rep (c(1, -1), each=length (all.regions))
 
 	# Group members setups etc
-	group.error.changes <- determine.group.error.changes (all.features, all.labels, 
+	peak.scores <- determine.peak.scores (all.features, all.labels, 
 		group.lasso.results$w, clustering.results$groups)
 	group.scores <- determine.group.scores (all.features, all.labels,
 		group.lasso.results$w, clustering.results$groups, no.cores)
 	group.members <- determine.group.members  (all.labels,
-		group.scores, group.error.changes, fdr.cutoff=fdr.cutoff,
-		no.cores=no.cores, test.classes=1)$group.members
+		group.scores, peak.scores, fdr.cutoff=fdr.cutoff,
+		no.cores=no.cores, test.classes=1)$group.members[all.labels==1,]
+	peak.scores <- peak.scores[all.labels==1,]
 	colnames (group.members) <- sprintf ("Group%d", 1:ncol (group.members))
+	rownames (group.members) <- rownames(peak.scores) <- all.regions$name
+	dimnames (peak.scores) <- dimnames (group.members)
+
+
+	# Adjust the matrices to include the N sequences
+	if (length(seqs.with.n) > 0) {
+		temp.peak.scores <- matrix (0, length (full.regions.list), ncol (peak.scores))
+		colnames(temp.peak.scores) <- colnames (peak.scores)
+		rownames(temp.peak.scores) <- full.regions.list$name
+		temp.group.members <- temp.peak.scores
+
+		temp.peak.scores[-seqs.with.n,] <- peak.scores
+		temp.group.members[-seqs.with.n,] <- group.members
+		peak.scores <- temp.peak.scores
+		group.members <- temp.group.members
+	}
+
+	save( peak.scores, group.scores, group.members, 
+		file=sprintf( "%s/seqgl_results.Rdata", out.dir ))
 
 	# Write to files
 	group.dir <- sprintf ("%s/group_members", out.dir)
 	dir.create (group.dir)
 	test.groups <- dir (sprintf ("%s/group_motifs", out.dir))
 	for (group in test.groups) 
-			granges.to.bed (all.regions[which (group.members[,group] == 1)], sprintf ("%s/%s_members.bed", group.dir, group))
+			granges.to.bed (full.regions.list[which (group.members[,group] == 1)], 
+				sprintf ("%s/%s_members.bed", group.dir, group))
 	time.end <- get.time ()
 	show (sprintf ("Time for determining group membership: %.2f", (time.end - time.start) / 60))
 

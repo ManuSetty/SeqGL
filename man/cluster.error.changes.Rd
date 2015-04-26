@@ -2,11 +2,11 @@
 \alias{cluster.error.changes}
 \title{Hierichal clustering of group error changes}
 \usage{
-  cluster.error.changes(group.error.changes, group.scores,
+  cluster.error.changes(peak.scores, group.scores,
     pdf.file)
 }
 \arguments{
-  \item{group.error.changes}{Matrix of group scores for
+  \item{peak.scores}{Matrix of group scores for
   each example. See \link{\code{determine.error.changes}}}
 
   \item{group.scores}{Ranking of each group. See

@@ -1,8 +1,8 @@
-\name{determine.group.error.changes}
-\alias{determine.group.error.changes}
+\name{determine.peak.scores}
+\alias{determine.peak.scores}
 \title{Group scores for each group and example}
 \usage{
-  determine.group.error.changes(train.features, labels,
+  determine.peak.scores(train.features, labels,
     group.w, groups)
 }
 \arguments{

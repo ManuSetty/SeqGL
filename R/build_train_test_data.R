@@ -26,7 +26,7 @@ build.train.test.data <- function (pos.regions, neg.regions,
 	neg.test.inds <- setdiff (1:neg.length, neg.train.inds)
 
 	# Extract sequences
-    show ('Extract sequences for all examples...')
+    show ('Extract sequences for all training and test examples...')
     time.start <- get.time ()
     org <- load.bsgenome (org)
 	seqs <- get.seqs (org, c(pos.regions, neg.regions))

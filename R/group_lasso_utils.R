@@ -21,21 +21,21 @@ logistic.errors <- function (X, labels, w) {
 #' @seealso \link{\code{run.group.lasso}}
 #' @export
 
-determine.group.error.changes <- function (train.features, labels, group.w, groups){
+determine.peak.scores <- function (train.features, labels, group.w, groups){
 
 	# Residuals when each group is set to 0
-	group.error.changes <- matrix (0, nrow (train.features), length (unique (groups)))
+	peak.scores <- matrix (0, nrow (train.features), length (unique (groups)))
 	for (group in unique (groups)) {	
 		inds <- which (groups == group)	
 		new.w <- group.w;  new.w[inds] <- 0
-		group.error.changes[,group] <- as.vector (logistic.errors (train.features, labels, new.w))
+		peak.scores[,group] <- as.vector (logistic.errors (train.features, labels, new.w))
 	}
 
 	# Error changes
 	residuals <- logistic.errors (train.features, labels, group.w)
-	group.error.changes <- group.error.changes - as.vector (residuals)
+	peak.scores <- peak.scores - as.vector (residuals)
 
-	return (group.error.changes)
+	return (peak.scores)
 }
 
 
@@ -60,8 +60,8 @@ determine.group.scores <- function (train.features, labels, group.w, groups,
 		new.w <- group.w
 		feature.index <- which (groups == group)
 		new.w[feature.index]  <- 0
-		group.error.changes <- logistic.errors (train.features, labels, new.w) - residuals
-		means <- tapply (group.error.changes, labels, sum)
+		peak.scores <- logistic.errors (train.features, labels, new.w) - residuals
+		means <- tapply (peak.scores, labels, sum)
 
 		## score class and value
 		ind <- which (means == max (means))[1]
@@ -91,7 +91,7 @@ determine.group.scores <- function (train.features, labels, group.w, groups,
 #'
 #' @param labels Training labels (Should be +1/-1)
 #' @param group.scores Matrix of group scores
-#' @param group.error.changes Matrix of example group scores
+#' @param peak.scores Matrix of example group scores
 #' @param test.classes Classes to determine group members
 #' @param fdr.cutoff q-value from examples of other class
 #' @param no.cores No of cores for parallel processing
@@ -101,7 +101,7 @@ determine.group.scores <- function (train.features, labels, group.w, groups,
 #' @export
 
 determine.group.members <- function (labels, group.scores, 
-	group.error.changes, test.classes=c(1, -1), fdr.cutoff=0.05, no.cores=1) {
+	peak.scores, test.classes=c(1, -1), fdr.cutoff=0.05, no.cores=1) {
 
 	# Set up matrix
 	time.start <- get.time ()
@@ -112,12 +112,12 @@ determine.group.members <- function (labels, group.scores,
 
 		# Set up group values
 		group.class <- group.scores[group, 'class']
-		gcs <- group.error.changes[labels == group.class, group]
+		gcs <- peak.scores[labels == group.class, group]
 		if (!group.class %in% test.classes || length (which (gcs != 0)) == 0)
-			return (rep (1, nrow (group.error.changes)))
+			return (rep (1, nrow (peak.scores)))
 
 		# Set up empirical null
-		group.emp.null <- group.error.changes[labels == -group.class, group]
+		group.emp.null <- peak.scores[labels == -group.class, group]
 	    group.emp.null <- sort (group.emp.null[group.emp.null != 0])
 
 	    # Check if no distributoin exists
@@ -142,14 +142,14 @@ determine.group.members <- function (labels, group.scores,
 	    }
 
 		# Set up members and return
-		members <- rep (NA, nrow (group.error.changes))
+		members <- rep (NA, nrow (peak.scores))
 		members[labels == group.class] <- pvals
 		return (members)
 
 	}
 
 	# Group nominal pvalues
-	group.pvals <- simplify2array (mclapply (1:ncol (group.error.changes), 
+	group.pvals <- simplify2array (mclapply (1:ncol (peak.scores), 
 		find.members, mc.cores=no.cores))
 
 	# Adjust them and find members

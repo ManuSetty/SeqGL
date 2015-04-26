@@ -1,10 +1,10 @@
 Package: SeqGL
 Type: Package
 Title: Group lasso for Dnase/ChIP-seq data
-Version: 1.0.1
-Date: 2013-06-26
+Version: 1.1
+Date: 2015-04-28
 Author: Manu Setty
-Maintainer: Manu Setty <manu@cbio.mskcc.org>
+Maintainer: Manu Setty <manu.talanki@gmail.com>
 Description: This package presents a method which uses group lasso to
     discriminate between bound and non bound regions to accurately identify
     transcription factors bound at the specific regions.

@@ -58,11 +58,11 @@ biocLite(c("Biostrings", "GenomicRanges", "BSgenome", "WGCNA", "fastcluster", "g
 
 \item ChIPKernels package for wildcard kernel. This package can be downloaded from \url{https://bitbucket.org/leslielab/chipkernels}.
 
-\item spams toolbox for running group lasso. Download and install the R package from \url{http://spams-devel.gforge.inria.fr/downloads.html}.
+\item spams toolbox for running group lasso. Download and install the R package from \url{http://spams-devel.gforge.inria.fr/downloads.html}. Please refer to \url{http://www.thecoatlessprofessor.com/programming/rcpp-rcpparmadillo-and-os-x-mavericks-lgfortran-and-lquadmath-error} for issues with installing spams on OS X Mavericks.
 
-\item HOMER motif finding tool for associating groups with motifs. \url{http://biowhat.ucsd.edu/homer/ngs/index.html}.
+\item HOMER motif finding tool for associating groups with motifs. \url{http://homer.salk.edu/homer/}.
 
-\item BSgenome package for the organisms of your choice from Bioconductor. Example if the peaks are from hg19, install BSgenome.Hsapiens.UCSC.hg19 from \url{http://bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg19.html}. The example detailed in this vignette assumes this package has been installed.
+\item BSgenome package for the organisms of your choice from Bioconductor. Example if the peaks are from hg19, install BSgenome.Hsapiens.UCSC.hg19 from \url{http://bioconductor.org/packages/release/data/annotation/html/BSgenome.Hsapiens.UCSC.hg19.html}. The example detailed in this vignette assumes this package has been installed. Install the HOMER genome as well for the organism of your choice using \texttt{perl /path-to-homer/configureHomer.pl -install hg19}.
 
 \end{itemize}
 
@@ -121,9 +121,10 @@ The contents of the results folder:
 \item test\_auc.pdf: ROC plot showing the performance of the method. auROC varies from $0.5-1$ with being perfect classification.
 \item group\_members: Folder containing peaks associated with each group.
 \item group\_motifs: Folder containing all the HOMER results.
-\item train\_test\_data.Rds R object containing the train and test data.
-\item clustering\_results.Rds R object containing clustering results.
-\item group\_lasso\_results.Rdata R object containing all the group lasso results.
+\item train\_test\_data.Rds: R object containing the train and test data.
+\item clustering\_results.Rds: R object containing clustering results.
+\item group\_lasso\_results.Rdata: R object containing all the group lasso results.
+\item seqgl\_results.Rdata: R object containing group scores, group membership and peak scores for all peaks.
 \end{itemize}
 
 
@@ -198,14 +199,14 @@ group.lasso.results <- run.group.lasso (train.test.data$train.features, train.te
 
 Group rankings and peaks associated with group can be determined using 
 <<cache=TRUE>>=
-group.error.changes <- determine.group.error.changes (train.test.data$train.features, 
+peak.scores <- determine.peak.scores (train.test.data$train.features, 
 	train.test.data$train.labels, group.lasso.results$w, clustering.results$groups)
 group.scores <- determine.group.scores (train.test.data$train.features, 
 	train.test.data$train.labels, group.lasso.results$w, clustering.results$groups)
 group.members <- determine.group.members  (train.test.data$train.labels, 
-	group.scores, group.error.changes, 
+	group.scores, peak.scores, 
 	test.classes=1)$group.members
-save (group.lasso.results, group.error.changes, group.scores, group.members,
+save (group.lasso.results, peak.scores, group.scores, group.members,
 	file=sprintf ("%s/group_lasso_results.Rdata", res.dir))
 @
 
