@@ -178,6 +178,8 @@ run.seqGL <- function (peaks.file, out.dir, data.type, org,
 	all.negs <- shift (all.regions, span*2)
 	if (length(seqs.with.n) > 0) {
 		seqs <- c(pos.seqs[-seqs.with.n], neg.seqs[-seqs.with.n])
+	} else {
+		seqs <- c(pos.seqs, neg.seqs)
 	}
 	all.features <- build.features.kernels (dictionary.file, seqs,
 		, kmers=colnames (train.test.data$train.features), verbose=FALSE)$features
