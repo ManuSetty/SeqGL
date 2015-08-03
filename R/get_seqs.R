@@ -50,7 +50,7 @@ get.seqs <- function (org, regions, no.cores=1) {
 
 load.bsgenome <- function (genome) {
 
-  if (!genome %in% c('hg19', 'hg18', 'mm9')) {
+  if (!genome %in% c('hg19', 'hg18', 'mm9', 'mm10')) {
     stop ('The specified organism is not supported. Please contact manu@cbio.mskcc.org for adding support to the organism')
   }
 
