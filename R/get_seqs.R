@@ -50,7 +50,7 @@ get.seqs <- function (org, regions, no.cores=1) {
 
 load.bsgenome <- function (genome) {
 
-  if (!genome %in% c('hg19', 'hg18', 'mm9', 'mm10')) {
+  if (!genome %in% c('hg19', 'hg18', 'mm9', 'mm10', 'pFal')) {
     stop ('The specified organism is not supported. Please contact manu@cbio.mskcc.org for adding support to the organism')
   }
 
@@ -72,6 +72,11 @@ load.bsgenome <- function (genome) {
   if (genome == 'mm10') {
     library (BSgenome.Mmusculus.UCSC.mm10)
     org <- Mmusculus
+  }
+
+  if (genome == 'pFal'){
+    library (BSgenome.Pfalciparum.PlasmoDB.plasFalc3D76)
+    org <- Pfalciparum
   }
 
   return (org)
