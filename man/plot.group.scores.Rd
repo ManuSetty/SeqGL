@@ -6,7 +6,7 @@
 }
 \arguments{
   \item{group.scores}{Ranking of each group. See
-  \link{\code{determine.group.scores}}.}
+  \code{\link{determine.group.scores}}.}
 
   \item{pdf.file}{Pdf file to write the image to}
 }

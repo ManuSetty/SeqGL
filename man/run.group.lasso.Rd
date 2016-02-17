@@ -29,9 +29,9 @@ List of results containing \code{w}, \code{test.preds}, \code{aucs}
 }
 \description{
 Using the spams toolbox to run group lasso at regularization parameters selected
-using \link{\code{group.lasso.eval.parameters}}
+using \code{\link{group.lasso.eval.parameters}}
 }
 \seealso{
-\link{\code{run.group.lasso}}
+\code{\link{run.group.lasso}}
 }
 

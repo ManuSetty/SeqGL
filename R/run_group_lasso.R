@@ -7,7 +7,7 @@
 #' @param no.cores Number of cores for parallel processing
 #' @description This function performs hierarchical clustering of features based on their correlation
 #' @return List containing \code{groups} which show the feature assignments and \code{linkage}
-#' @seealso \link{\code{build.train.test.data}}
+#' @seealso \code{\link{build.train.test.data}}
 #' @export
 
 run.clustering <- function (features, no.groups=200, no.cores=1) {
@@ -42,7 +42,7 @@ run.clustering <- function (features, no.groups=200, no.cores=1) {
 #' @param no.cores Number of cores for parallel processing
 #' @description Using the spams toolbox to run group lasso
 #' @return The w vector, weights of each feature
-#' @seealso \link{\code{run.group.lasso}}
+#' @seealso \code{\link{run.group.lasso}}
 #' @export
 
 group.lasso <- function (features, labels, groups, lambda1, lambda2, no.cores=1) {
@@ -71,7 +71,7 @@ group.lasso <- function (features, labels, groups, lambda1, lambda2, no.cores=1)
 #' @description Using the spams toolbox to run group lasso at various parameters to identify 
 #' parameter combination with best test auc.
 #' @return List containing \code{lambdas} and a matrix of test aucs named \code{auc.matrix}
-#' @seealso \link{\code{run.group.lasso}}
+#' @seealso \code{\link{run.group.lasso}}
 #' @export
 
 group.lasso.eval.parameters <- function (train.features, train.labels,
@@ -115,9 +115,9 @@ group.lasso.eval.parameters <- function (train.features, train.labels,
 #' @param lambda2 L2 regularization parameter
 #' @param no.cores Number of cores for parallel processing
 #' @description Using the spams toolbox to run group lasso at regularization parameters selected 
-#' using \link{\code{group.lasso.eval.parameters}}
+#' using \code{\link{group.lasso.eval.parameters}}
 #' @return List of results containing \code{w}, \code{test.preds}, \code{aucs}
-#' @seealso \link{\code{run.group.lasso}}
+#' @seealso \code{\link{run.group.lasso}}
 #' @export
 
 

@@ -10,7 +10,7 @@
 #' @param ... Additional arugments to \code{select.top.features}
 #' @return List containging feature matrix, labels and indexes for both train and test.
 #' @return Matrix of positions indicating the position in the sequence with maximum kmer score.
-#' @seealso \link{\code{select.top.features}}
+#' @seealso \code{\link{select.top.features}}
 #' @export
 
 build.train.test.data <- function (pos.regions, neg.regions, 

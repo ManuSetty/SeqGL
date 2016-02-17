@@ -24,6 +24,6 @@ The w vector, weights of each feature
 Using the spams toolbox to run group lasso
 }
 \seealso{
-\link{\code{run.group.lasso}}
+\code{\link{run.group.lasso}}
 }
 

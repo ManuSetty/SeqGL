@@ -29,6 +29,6 @@ Matrix of positions indicating the position in the sequence with maximum kmer sc
 Function to extract sequences and build feature matrices
 }
 \seealso{
-\link{\code{select.top.features}}
+\code{\link{select.top.features}}
 }
 

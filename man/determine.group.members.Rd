@@ -28,6 +28,6 @@ determine.group.members(labels, group.scores, peak.scores, test.classes = c(1,
 Determine group membership
 }
 \seealso{
-\link{\code{run.group.lasso}}
+\code{\link{run.group.lasso}}
 }
 

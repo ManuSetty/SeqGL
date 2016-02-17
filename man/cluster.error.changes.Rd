@@ -7,10 +7,10 @@
 }
 \arguments{
   \item{peak.scores}{Matrix of group scores for
-  each example. See \link{\code{determine.error.changes}}}
+  each example. See \code{\link{determine.error.changes}}}
 
   \item{group.scores}{Ranking of each group. See
-  \link{\code{determine.group.scores}}.}
+  \code{\link{determine.group.scores}}.}
 
   \item{pdf.file}{Pdf file to write the image to}
 }

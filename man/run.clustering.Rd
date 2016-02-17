@@ -20,6 +20,6 @@ List containing \code{groups} which show the feature assignments and \code{linka
 This function performs hierarchical clustering of features based on their correlation
 }
 \seealso{
-\link{\code{build.train.test.data}}
+\code{\link{build.train.test.data}}
 }
 

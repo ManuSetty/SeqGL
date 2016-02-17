@@ -22,6 +22,6 @@ Matrix of size no. of sequences x no. of groups.
 Group scores for each group and example
 }
 \seealso{
-\link{\code{run.group.lasso}}
+\code{\link{run.group.lasso}}
 }
 

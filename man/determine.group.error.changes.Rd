@@ -22,6 +22,6 @@
   Group scores for each group and example
 }
 \seealso{
-  \link{\code{run.group.lasso}}
+  \code{\link{run.group.lasso}}
 }
 

@@ -31,6 +31,6 @@ Using the spams toolbox to run group lasso at various parameters to identify
 parameter combination with best test auc.
 }
 \seealso{
-\link{\code{run.group.lasso}}
+\code{\link{run.group.lasso}}
 }
 

@@ -18,7 +18,7 @@ logistic.errors <- function (X, labels, w) {
 #' @param group.w Group lasso model
 #' @param groups Feature assignment to groups. Each feature should belong to exactly one group.
 #' @return Matrix of size no. of sequences x no. of groups.
-#' @seealso \link{\code{run.group.lasso}}
+#' @seealso \code{\link{run.group.lasso}}
 #' @export
 
 determine.peak.scores <- function (train.features, labels, group.w, groups){
@@ -48,7 +48,7 @@ determine.peak.scores <- function (train.features, labels, group.w, groups){
 #' @param no.cores No of cores for parallel processing
 #' @return Matrix with a row for each column. Each group will have the following fields:
 #' class (+1/-1), score, group.size (no. of kmers in group), class.size (no. non zero kmers in group), group
-#' @seealso \link{\code{run.group.lasso}}
+#' @seealso \code{\link{run.group.lasso}}
 #' @export
 
 determine.group.scores <- function (train.features, labels, group.w, groups,
@@ -97,7 +97,7 @@ determine.group.scores <- function (train.features, labels, group.w, groups,
 #' @param no.cores No of cores for parallel processing
 #' @return \item{group.members}{Binary matrix of size no. of sequences x no. of groups indicating group membership}
 #'  \item{group.pvals}{FDR-corrected p-value matrix of size no. of sequences x no. of groups}
-#' @seealso \link{\code{run.group.lasso}}
+#' @seealso \code{\link{run.group.lasso}}
 #' @export
 
 determine.group.members <- function (labels, group.scores, 

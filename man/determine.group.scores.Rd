@@ -25,6 +25,6 @@ class (+1/-1), score, group.size (no. of kmers in group), class.size (no. non ze
 Ranking of groups based on predictive power
 }
 \seealso{
-\link{\code{run.group.lasso}}
+\code{\link{run.group.lasso}}
 }
 
