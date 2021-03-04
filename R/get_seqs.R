@@ -50,8 +50,13 @@ get.seqs <- function (org, regions, no.cores=1) {
 
 load.bsgenome <- function (genome) {
 
-  if (!genome %in% c('hg19', 'hg18', 'mm9', 'mm10', 'pFal')) {
+  if (!genome %in% c('hg38', 'hg19', 'hg18', 'mm9', 'mm10', 'pFal')) {
     stop ('The specified organism is not supported. Please contact manu@cbio.mskcc.org for adding support to the organism')
+  }
+
+  if (genome == 'hg38') {
+    library (BSgenome.Hsapiens.UCSC.hg38)
+    org <- Hsapiens
   }
 
   if (genome == 'hg19') {
